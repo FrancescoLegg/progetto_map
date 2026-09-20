@@ -1,3 +1,6 @@
+package tree;
+import  data.Data;
+
 /**
  * Classe astratta per modellare l'astrazione dell'entità nodo dell'albero di decisione
  * 

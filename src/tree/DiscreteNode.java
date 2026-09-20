@@ -1,3 +1,8 @@
+package tree;
+import data.Attribute;
+import data.Data;
+import data.DiscreteAttribute;
+
 /**
  * Estende la classe {@link SplitNode} e modella l'entità nodo di split
  * relativo ad un attributo indipendente discreto.

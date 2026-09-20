@@ -1,7 +1,11 @@
+package tree;
+import data.Data;
+import data.DiscreteAttribute;
+
 /**
  * Modella l'intero albero di regressione come insieme di sotto-alberi.
  */
-class RegressionTree {
+public class RegressionTree {
 
 	/** Radice del sotto-albero corrente. */
 	Node root;
@@ -22,7 +26,7 @@ class RegressionTree {
 	 *
 	 * @param trainingSet training set completo
 	 */
-	RegressionTree(Data trainingSet) {
+	public RegressionTree(Data trainingSet) {
 
 		learnTree(trainingSet, 0, trainingSet.getNumberOfExamples() - 1, trainingSet.getNumberOfExamples() * 10 / 100);
 	}
@@ -100,7 +104,7 @@ class RegressionTree {
 	/**
 	 * Stampa le informazioni dell'intero albero, compresa un'intestazione.
 	 */
-	void printTree() {
+	public void printTree() {
 		System.out.println("********* TREE **********\n");
 		System.out.println(toString());
 		System.out.println("*************************\n");
@@ -130,7 +134,7 @@ class RegressionTree {
 	 * Scandisce ogni ramo dell'albero dalla radice alla foglia concatenando le
 	 * informazioni dei nodi di split fino al nodo foglia, e stampa le regole.
 	 */
-	void printRules() {
+	public void printRules() {
 		System.out.println("********* RULES **********");
 		printRules("");
 		System.out.println("*************************");

@@ -1,3 +1,5 @@
+package data;
+
 /**
  * Questa classe astratta modella un generico attributo discreto o continuo.
  */
@@ -24,7 +26,7 @@ public abstract class Attribute {
      * 
      * @return il nome dell'attributo
      */
-    String getName() {
+    public String getName() {
         return name;
     }
 
@@ -33,7 +35,12 @@ public abstract class Attribute {
      *
      * @return l'identificativo numerico dell'attributo
      */
-    int getIndex() {
+    public int getIndex() {
         return index;
     }
+
+    @Override
+   public String toString() {
+       return name;
+   }
 }

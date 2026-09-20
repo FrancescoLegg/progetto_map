@@ -1,3 +1,6 @@
+package tree;
+import  data.Data;
+
 /**
  * Estende la classe {@link Node} e modella l'entità nodo fogliare
  * dell'albero di decisione.

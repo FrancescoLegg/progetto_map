@@ -1,3 +1,5 @@
+package data;
+
 /**
  * Estende la classe {@link Attribute} e rappresenta un attributo continuo.
  */

@@ -1,3 +1,5 @@
+package data;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -23,7 +25,7 @@ public class Data {
 	/**
 	 * Costruisce il dataset leggendo lo schema e i dati dal file indicato.
 	 */
-	Data(String fileName) throws FileNotFoundException {
+	public Data(String fileName) throws FileNotFoundException {
 
 		File inFile = new File(fileName);
 
@@ -78,7 +80,7 @@ public class Data {
 	 *
 	 * @return il numero di esempi (righe) del dataset
 	 */
-	int getNumberOfExamples() {
+	public  int getNumberOfExamples() {
 		return numberOfExamples;
 	}
 
@@ -87,7 +89,7 @@ public class Data {
 	 *
 	 * @return il numero di attributi esplicativi
 	 */
-	int getNumberOfExplanatoryAttributes() {
+	public int getNumberOfExplanatoryAttributes() {
 		return explanatorySet.length;
 	}
 
@@ -108,7 +110,7 @@ public class Data {
 	 * @param attributeIndex indice dell'attributo esplicativo (colonna)
 	 * @return il valore dell'attributo esplicativo richiesto per l'esempio indicato
 	 */
-	Object getExplanatoryValue(int exampleIndex, int attributeIndex) {
+	public Object getExplanatoryValue(int exampleIndex, int attributeIndex) {
 		return data[exampleIndex][attributeIndex];
 	}
 
@@ -118,7 +120,7 @@ public class Data {
 	 * @param index indice dell'attributo esplicativo richiesto
 	 * @return l'attributo esplicativo corrispondente all'indice indicato
 	 */
-	Attribute getExplanatoryAttribute(int index) {
+	public Attribute getExplanatoryAttribute(int index) {
 		return explanatorySet[index];
 	}
 
@@ -159,7 +161,7 @@ public class Data {
 	 * @param beginExampleIndex indice di inizio (incluso) del sottoinsieme da ordinare
 	 * @param endExampleIndex   indice di fine (incluso) del sottoinsieme da ordinare
 	 */
-	void sort(Attribute attribute, int beginExampleIndex, int endExampleIndex) {
+	public void sort(Attribute attribute, int beginExampleIndex, int endExampleIndex) {
 
 		quicksort(attribute, beginExampleIndex, endExampleIndex);
 	}
