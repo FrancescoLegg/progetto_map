@@ -1,6 +1,8 @@
 package tree;
+
 import data.Data;
 import data.DiscreteAttribute;
+import utility.Keyboard;
 
 /**
  * Modella l'intero albero di regressione come insieme di sotto-alberi.
@@ -153,9 +155,35 @@ public class RegressionTree {
 		} else {
 			SplitNode split = (SplitNode) root;
 			for (int i = 0; i < childTree.length; i++) {
-				String cond = split.getAttribute().getName() + split.getSplitInfo(i).getComparator() + split.getSplitInfo(i).getSplitValue();
+				String cond = split.getAttribute().getName() + split.getSplitInfo(i).getComparator()
+						+ split.getSplitInfo(i).getSplitValue();
 				childTree[i].printRules(current.equals("") ? cond : current + " AND " + cond);
 			}
+		}
+	}
+
+	/**
+	 * Visualizza le informazioni di ciascuno split dell'albero e acquisisce da
+	 * tastiera il valore dell'esempio da predire. Se root è una foglia termina
+	 * l'acquisizione e restituisce la predizione, altrimenti invoca
+	 * ricorsivamente il metodo sul figlio di root in childTree[] individuato
+	 * dalla risposta acquisita.
+	 *
+	 * @return il valore di classe predetto per l'esempio acquisito
+	 * @throws UnknownValueException se la risposta non permette di selezionare un ramo valido
+	 */
+	public Double predictClass() throws UnknownValueException {
+		if (root instanceof LeafNode)
+			return ((LeafNode) root).getPredictedClassValue();
+		else {
+			int risp;
+			System.out.println(((SplitNode) root).formulateQuery());
+			risp = Keyboard.readInt();
+			if (risp == -1 || risp >= root.getNumberOfChildren())
+				throw new UnknownValueException("The answer should be an integer between 0 and "
+						+ (root.getNumberOfChildren() - 1) + "!");
+			else
+				return childTree[risp].predictClass();
 		}
 	}
 }

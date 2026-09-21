@@ -1,3 +1,5 @@
+package utility;
+
 import data.Data;
 import tree.RegressionTree;
 import java.io.FileNotFoundException;
@@ -9,7 +11,6 @@ import java.io.FileNotFoundException;
 //  parsing, conversions, and exception handling.
 //********************************************************************
 
-package utility;
 
 import java.io.*;
 import java.util.*;

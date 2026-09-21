@@ -2,6 +2,7 @@ package data;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
@@ -24,55 +25,78 @@ public class Data {
 
 	/**
 	 * Costruisce il dataset leggendo lo schema e i dati dal file indicato.
+	 *
+	 * @param fileName nome del file contenente il training set
+	 * @throws TrainingDataException se il file è inesistente, lo schema è mancante
+	 *                               o errato, il training set è vuoto o privo di
+	 *                               variabile target numerica
 	 */
-	public Data(String fileName) throws FileNotFoundException {
+	public Data(String fileName) throws TrainingDataException {
 
 		File inFile = new File(fileName);
 
-		Scanner sc = new Scanner(inFile);
-		String line = sc.nextLine();
-		if (!line.contains("@schema"))
-			throw new RuntimeException("Errore nello schema");
-		String s[] = line.split(" ");
-
-		// popolare explanatory Set
-		// @schema 4
-
-		explanatorySet = new Attribute[new Integer(s[1])];
-		short iAttribute = 0;
-		line = sc.nextLine();
-		while (!line.contains("@data")) {
-			s = line.split(" ");
-			if (s[0].equals("@desc")) { // aggiungo l'attributo allo spazio descrittivo
-				// @desc motor discrete A,B,C,D,E
-				String discreteValues[] = s[2].split(",");
-				explanatorySet[iAttribute] = new DiscreteAttribute(s[1], iAttribute, discreteValues);
-			} else if (s[0].equals("@target"))
-				classAttribute = new ContinuousAttribute(s[1], iAttribute);
-
-			iAttribute++;
-			line = sc.nextLine();
-
+		Scanner sc;
+		try {
+			sc = new Scanner(inFile);
+		} catch (FileNotFoundException e) {
+			throw new TrainingDataException(e.toString());
 		}
 
-		// avvalorare numero di esempi
-		// @data 167
-		numberOfExamples = new Integer(line.split(" ")[1]);
+		try {
+			String line = sc.nextLine();
+			if (!line.contains("@schema"))
+				throw new TrainingDataException("Errore nello schema");
+			String s[] = line.split(" ");
 
-		// popolare data
-		data = new Object[numberOfExamples][explanatorySet.length + 1];
-		short iRow = 0;
-		while (sc.hasNextLine()) {
+			// popolare explanatory Set
+			// @schema 4
+
+			explanatorySet = new Attribute[new Integer(s[1])];
+			short iAttribute = 0;
 			line = sc.nextLine();
-			// assumo che attributi siano tutti discreti
-			s = line.split(","); // E,E,5,4, 0.28125095
-			for (short jColumn = 0; jColumn < s.length - 1; jColumn++)
-				data[iRow][jColumn] = s[jColumn];
-			data[iRow][s.length - 1] = new Double(s[s.length - 1]);
-			iRow++;
+			while (!line.contains("@data")) {
+				s = line.split(" ");
+				if (s[0].equals("@desc")) { // aggiungo l'attributo allo spazio descrittivo
+					// @desc motor discrete A,B,C,D,E
+					String discreteValues[] = s[2].split(",");
+					explanatorySet[iAttribute] = new DiscreteAttribute(s[1], iAttribute, discreteValues);
+				} else if (s[0].equals("@target"))
+					classAttribute = new ContinuousAttribute(s[1], iAttribute);
 
+				iAttribute++;
+				line = sc.nextLine();
+
+			}
+
+			if (classAttribute == null)
+				throw new TrainingDataException("Schema privo della variabile target");
+
+			// avvalorare numero di esempi
+			// @data 167
+			numberOfExamples = new Integer(line.split(" ")[1]);
+			if (numberOfExamples <= 0)
+				throw new TrainingDataException("Training set vuoto");
+
+			// popolare data
+			data = new Object[numberOfExamples][explanatorySet.length + 1];
+			short iRow = 0;
+			while (sc.hasNextLine()) {
+				line = sc.nextLine();
+				// assumo che attributi siano tutti discreti
+				s = line.split(","); // E,E,5,4, 0.28125095
+				for (short jColumn = 0; jColumn < s.length - 1; jColumn++)
+					data[iRow][jColumn] = s[jColumn];
+				data[iRow][s.length - 1] = new Double(s[s.length - 1]);
+				iRow++;
+
+			}
+		} catch (NoSuchElementException e) {
+			throw new TrainingDataException("Errore nello schema: file incompleto");
+		} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+			throw new TrainingDataException("Errore nel formato dei dati: " + e);
+		} finally {
+			sc.close();
 		}
-		sc.close();
 	}
 
 	/**
@@ -80,7 +104,7 @@ public class Data {
 	 *
 	 * @return il numero di esempi (righe) del dataset
 	 */
-	public  int getNumberOfExamples() {
+	public int getNumberOfExamples() {
 		return numberOfExamples;
 	}
 
@@ -261,9 +285,9 @@ public class Data {
 	 * quell'attributo e ne stampa il risultato.
 	 *
 	 * @param args argomenti da riga di comando (non utilizzati)
-	 * @throws FileNotFoundException se il file {@code servo.dat} non viene trovato
+	 * @throws TrainingDataException se il training set non viene acquisito correttamente
 	 */
-	public static void main(String args[]) throws FileNotFoundException {
+	public static void main(String args[]) throws TrainingDataException {
 		Data trainingSet = new Data("servo.dat");
 		System.out.println(trainingSet);
 
