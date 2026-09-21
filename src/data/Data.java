@@ -2,8 +2,12 @@ package data;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Rappresenta un training/test set per un problema di apprendimento con
@@ -17,8 +21,8 @@ public class Data {
 	/** Numero di esempi (righe) presenti nel dataset. */
 	private int numberOfExamples;
 
-	/** Insieme (array) degli attributi esplicativi (descrittivi) del dataset. */
-	private Attribute explanatorySet[];
+	/** Insieme (lista) degli attributi esplicativi (descrittivi) del dataset. */
+	private List<Attribute> explanatorySet = new LinkedList<Attribute>();
 
 	/** Attributo di classe, sempre continuo. */
 	private ContinuousAttribute classAttribute;
@@ -48,18 +52,17 @@ public class Data {
 				throw new TrainingDataException("Errore nello schema");
 			String s[] = line.split(" ");
 
-			// popolare explanatory Set
-			// @schema 4
-
-			explanatorySet = new Attribute[new Integer(s[1])];
+			Integer.parseInt(s[1]);
 			short iAttribute = 0;
 			line = sc.nextLine();
 			while (!line.contains("@data")) {
 				s = line.split(" ");
 				if (s[0].equals("@desc")) { // aggiungo l'attributo allo spazio descrittivo
 					// @desc motor discrete A,B,C,D,E
-					String discreteValues[] = s[2].split(",");
-					explanatorySet[iAttribute] = new DiscreteAttribute(s[1], iAttribute, discreteValues);
+					Set<String> discreteValues = new TreeSet<String>();
+					for (String v : s[2].split(","))
+						discreteValues.add(v);
+					explanatorySet.add(new DiscreteAttribute(s[1], iAttribute, discreteValues));
 				} else if (s[0].equals("@target"))
 					classAttribute = new ContinuousAttribute(s[1], iAttribute);
 
@@ -72,13 +75,12 @@ public class Data {
 				throw new TrainingDataException("Schema privo della variabile target");
 
 			// avvalorare numero di esempi
-			// @data 167
 			numberOfExamples = new Integer(line.split(" ")[1]);
 			if (numberOfExamples <= 0)
 				throw new TrainingDataException("Training set vuoto");
 
 			// popolare data
-			data = new Object[numberOfExamples][explanatorySet.length + 1];
+			data = new Object[numberOfExamples][explanatorySet.size() + 1];
 			short iRow = 0;
 			while (sc.hasNextLine()) {
 				line = sc.nextLine();
@@ -114,7 +116,7 @@ public class Data {
 	 * @return il numero di attributi esplicativi
 	 */
 	public int getNumberOfExplanatoryAttributes() {
-		return explanatorySet.length;
+		return explanatorySet.size();
 	}
 
 	/**
@@ -124,7 +126,7 @@ public class Data {
 	 * @return il valore (continuo) della classe per l'esempio richiesto
 	 */
 	public Double getClassValue(int exampleIndex) {
-		return (Double) data[exampleIndex][explanatorySet.length];
+		return (Double) data[exampleIndex][explanatorySet.size()];
 	}
 
 	/**
@@ -145,7 +147,7 @@ public class Data {
 	 * @return l'attributo esplicativo corrispondente all'indice indicato
 	 */
 	public Attribute getExplanatoryAttribute(int index) {
-		return explanatorySet[index];
+		return explanatorySet.get(index);
 	}
 
 	/**
@@ -167,10 +169,10 @@ public class Data {
 	public String toString() {
 		String value = "";
 		for (int i = 0; i < numberOfExamples; i++) {
-			for (int j = 0; j < explanatorySet.length; j++)
+			for (int j = 0; j < explanatorySet.size(); j++)
 				value += data[i][j] + ",";
 
-			value += data[i][explanatorySet.length] + "\n";
+			value += data[i][explanatorySet.size()] + "\n";
 		}
 		return value;
 
@@ -216,7 +218,7 @@ public class Data {
 	 * @param attribute attributo discreto rispetto al quale partizionare
 	 * @param inf       indice inferiore (incluso) dell'intervallo da partizionare
 	 * @param sup       indice superiore (incluso) dell'intervallo da partizionare
-	 * @return l'indice della posizione di separazione (pivot) dopo la partizione
+	 * @return l'indice della posizione di separazione dopo la partizione
 	 */
 	private int partition(DiscreteAttribute attribute, int inf, int sup) {
 		int i, j;
@@ -253,7 +255,7 @@ public class Data {
 	 * Algoritmo quicksort per l'ordinamento (ricorsivo, in place) degli esempi
 	 * compresi tra gli indici {@code inf} e {@code sup}, rispetto ai valori
 	 * assunti dall'attributo indicato, usando come relazione d'ordine totale
-	 * "&lt;=".
+	 *
 	 *
 	 * @param attribute attributo (discreto) rispetto al quale ordinare
 	 * @param inf       indice inferiore (incluso) dell'intervallo da ordinare

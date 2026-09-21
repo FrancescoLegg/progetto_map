@@ -1,4 +1,5 @@
 package tree;
+
 import data.Attribute;
 import data.Data;
 import data.DiscreteAttribute;
@@ -23,10 +24,10 @@ public class DiscreteNode extends SplitNode {
     }
 
     /**
-     * Genera le informazioni per ciascuno degli split candidati e popola l'array
-     * mapSplit[]. Sfrutta il fatto che il sotto-insieme di training è già ordinato
+     * Genera le informazioni per ciascuno degli split candidati e popola la lista
+     * mapSplit. Sfrutta il fatto che il sotto-insieme di training è già ordinato
      * rispetto all'attributo: gli esempi con lo stesso valore sono contigui, quindi
-     * viene creato uno {@link SplitInfo} per ciascun valore distinto presente
+     * viene creato uno SplitInfo per ciascun valore distinto presente
      * tra beginExampelIndex e endExampleIndex.
      *
      * @param trainingSet         training set completo
@@ -37,40 +38,31 @@ public class DiscreteNode extends SplitNode {
     void setSplitInfo(Data trainingSet, int beginExampelIndex, int endExampleIndex, Attribute attribute) {
         int col = attribute.getIndex();
 
-        // Conto i valori distinti del sotto-insieme (già ordinato)
-        int numberOfValues = 1;
-        for (int i = beginExampelIndex + 1; i <= endExampleIndex; i++) {
-            if (!trainingSet.getExplanatoryValue(i, col).equals(trainingSet.getExplanatoryValue(i - 1, col)))
-                numberOfValues++;
-        }
-        mapSplit = new SplitInfo[numberOfValues];
-
-        // Creo uno SplitInfo per ogni partizione
         int child = 0;
         int start = beginExampelIndex;
         for (int i = beginExampelIndex + 1; i <= endExampleIndex; i++) {
             if (!trainingSet.getExplanatoryValue(i, col).equals(trainingSet.getExplanatoryValue(i - 1, col))) {
                 // il valore è cambiato: chiudo la partizione [start, i-1]
-                mapSplit[child] = new SplitInfo(trainingSet.getExplanatoryValue(start, col), start, i - 1, child);
+                mapSplit.add(new SplitInfo(trainingSet.getExplanatoryValue(start, col), start, i - 1, child));
                 child++;
                 start = i;
             }
         }
         // l'ultima partizione arriva fino a endExampleIndex
-        mapSplit[child] = new SplitInfo(trainingSet.getExplanatoryValue(start, col), start, endExampleIndex, child);
+        mapSplit.add(new SplitInfo(trainingSet.getExplanatoryValue(start, col), start, endExampleIndex, child));
     }
 
     /**
      * Confronta il valore in input con il valore splitValue di ciascuno
-     * degli {@link SplitInfo} collezionati in mapSplit[].
+     * degli SplitInfo collezionati in mapSplit.
      *
      * @param value valore discreto dell'attributo che si vuole testare
-     * @return l'indice del ramo (posizione in mapSplit[]) per cui il test è positivo,
+     * @return l'indice del ramo (posizione in mapSplit) per cui il test è positivo,
      *         -1 se nessun ramo corrisponde
      */
     int testCondition(Object value) {
-        for (int i = 0; i < mapSplit.length; i++) {
-            if (mapSplit[i].getSplitValue().equals(value))
+        for (int i = 0; i < mapSplit.size(); i++) {
+            if (mapSplit.get(i).getSplitValue().equals(value))
                 return i;
         }
         return -1; // nessun ramo corrisponde

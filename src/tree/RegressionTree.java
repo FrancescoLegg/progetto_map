@@ -2,6 +2,7 @@ package tree;
 
 import data.Data;
 import data.DiscreteAttribute;
+import java.util.TreeSet;
 import utility.Keyboard;
 
 /**
@@ -49,9 +50,11 @@ public class RegressionTree {
 	}
 
 	/**
-	 * Per ciascun attributo indipendente istanzia il DiscreteNode associato e
-	 * seleziona quello con minore varianza. Ordina poi la porzione di trainingSet
-	 * corrente (tra begin ed end) rispetto all'attributo del nodo selezionato.
+	 * Per ciascun attributo indipendente istanzia il DiscreteNode associato e lo
+	 * inserisce in un TreeSet, che mantiene i nodi ordinati per splitVariance
+	 * crescente; il primo elemento è quindi lo split migliore. Ordina poi la
+	 * porzione di trainingSet corrente (tra begin ed end) rispetto all'attributo
+	 * del nodo selezionato.
 	 *
 	 * @param trainingSet training set completo
 	 * @param begin       indice del primo esempio del sotto-insieme
@@ -59,13 +62,13 @@ public class RegressionTree {
 	 * @return il nodo di split migliore per il sotto-insieme di training
 	 */
 	SplitNode determineBestSplitNode(Data trainingSet, int begin, int end) {
-		SplitNode bestNode = null;
+		TreeSet<SplitNode> ts = new TreeSet<SplitNode>();
 		for (int i = 0; i < trainingSet.getNumberOfExplanatoryAttributes(); i++) {
-			SplitNode currentNode = new DiscreteNode(trainingSet, begin, end,
-					(DiscreteAttribute) trainingSet.getExplanatoryAttribute(i));
-			if (bestNode == null || currentNode.getVariance() < bestNode.getVariance())
-				bestNode = currentNode;
+			ts.add(new DiscreteNode(trainingSet, begin, end,
+					(DiscreteAttribute) trainingSet.getExplanatoryAttribute(i)));
 		}
+		// il TreeSet è ordinato per splitVariance crescente: il primo è il migliore
+		SplitNode bestNode = ts.first();
 		// ogni DiscreteNode ha riordinato il sotto-insieme: riordino per l'attributo vincente
 		trainingSet.sort(bestNode.getAttribute(), begin, end);
 		return bestNode;
