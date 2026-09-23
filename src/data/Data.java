@@ -58,14 +58,17 @@ public class Data {
 			while (!line.contains("@data")) {
 				s = line.split(" ");
 				if (s[0].equals("@desc")) { // aggiungo l'attributo allo spazio descrittivo
-					// @desc motor discrete A,B,C,D,E
-					Set<String> discreteValues = new TreeSet<String>();
-					for (String v : s[2].split(","))
-						discreteValues.add(v);
-					explanatorySet.add(new DiscreteAttribute(s[1], iAttribute, discreteValues));
-				} else if (s[0].equals("@target"))
-					classAttribute = new ContinuousAttribute(s[1], iAttribute);
-
+                    if(s.length >= 3){
+                        // @desc motor discrete  A,B,C,D,E -> attributo discreto
+                        Set<String>discreteValues = new TreeSet<String>();
+                        for(String v: s[2].split(","))
+                            discreteValues.add(v);
+                        explanatorySet.add(new DiscreteAttribute(s[1], iAttribute, discreteValues));
+                    }else
+                        // @desc Y -> attributo continuo
+                        explanatorySet.add(new ContinuousAttribute(s[1],iAttribute));
+                }else if(s[0].equals("@target"))
+                    classAttribute = new  ContinuousAttribute(s[1], iAttribute);
 				iAttribute++;
 				line = sc.nextLine();
 
@@ -84,10 +87,13 @@ public class Data {
 			short iRow = 0;
 			while (sc.hasNextLine()) {
 				line = sc.nextLine();
-				// assumo che attributi siano tutti discreti
 				s = line.split(","); // E,E,5,4, 0.28125095
-				for (short jColumn = 0; jColumn < s.length - 1; jColumn++)
-					data[iRow][jColumn] = s[jColumn];
+				for (short jColumn = 0; jColumn < s.length - 1; jColumn++){
+					if(explanatorySet.get(jColumn) instanceof ContinuousAttribute)
+                        data[iRow][jColumn] = new Double(s[jColumn]);
+                    else
+                        data[iRow][jColumn] = s[jColumn];
+                }
 				data[iRow][s.length - 1] = new Double(s[s.length - 1]);
 				iRow++;
 
@@ -251,36 +257,71 @@ public class Data {
 
 	}
 
-	/**
-	 * Algoritmo quicksort per l'ordinamento (ricorsivo, in place) degli esempi
-	 * compresi tra gli indici {@code inf} e {@code sup}, rispetto ai valori
-	 * assunti dall'attributo indicato, usando come relazione d'ordine totale
-	 *
-	 *
-	 * @param attribute attributo (discreto) rispetto al quale ordinare
-	 * @param inf       indice inferiore (incluso) dell'intervallo da ordinare
-	 * @param sup       indice superiore (incluso) dell'intervallo da ordinare
-	 */
-	private void quicksort(Attribute attribute, int inf, int sup) {
+    /**
+    * Partiziona il vettore degli esempi, compresi tra gli indici {@code inf} e
+    * {@code sup}, rispetto al valore (numerico) assunto dall'attributo
+    * continuo indicato nell'elemento centrale, e restituisce il punto di
+    * separazione (pivot) risultante dalla partizione.
+    *
+    * @param attribute attributo continuo rispetto al quale partizionare
+    * @param inf       indice inferiore (incluso) dell'intervallo da partizionare
+    * @param sup       indice superiore (incluso) dell'intervallo da partizionare
+    * @return l'indice della posizione di separazione dopo la partizione
+    */
+    private int partition(ContinuousAttribute attribute, int inf, int sup) {
+        int i, j;
 
-		if (sup >= inf) {
+        i = inf;
+        j = sup;
+        int med = (inf + sup) / 2;
+        Double x = (Double) getExplanatoryValue(med, attribute.getIndex());
+        swap(inf, med);
+        while (true) {
+            while (i <= sup && ((Double) getExplanatoryValue(i, attribute.getIndex())).compareTo(x) <= 0) {
+                i++;
 
-			int pos;
+            }
+            while (((Double) getExplanatoryValue(j, attribute.getIndex())).compareTo(x) > 0) {
+                j--;
 
-			pos = partition((DiscreteAttribute) attribute, inf, sup);
+            }
+            if (i < j) {
+                swap(i, j);
+            } else
+                break;
+        }
+        swap(inf, j);
+        return j;
+    }
 
-			if ((pos - inf) < (sup - pos + 1)) {
-				quicksort(attribute, inf, pos - 1);
-				quicksort(attribute, pos + 1, sup);
-			} else {
-				quicksort(attribute, pos + 1, sup);
-				quicksort(attribute, inf, pos - 1);
-			}
 
-		}
-
-	}
-
+    /**
+    * Algoritmo quicksort per l'ordinamento (ricorsivo, in place) degli esempi
+    * compresi tra gli indici {@code inf} e {@code sup}, rispetto ai valori
+    * assunti dall'attributo indicato, usando come relazione d'ordine totale
+    * "&lt;=". Sfrutta l'RTTI per distinguere se l'attributo è discreto o
+    * continuo e invocare la relativa partizione.
+    *
+    * @param attribute attributo (discreto o continuo) rispetto al quale ordinare
+    * @param inf       indice inferiore (incluso) dell'intervallo da ordinare
+    * @param sup       indice superiore (incluso) dell'intervallo da ordinare
+    */
+    private void quicksort(Attribute attribute, int inf, int sup) {
+        if (sup >= inf) {
+            int pos;
+            if (attribute instanceof DiscreteAttribute)
+                pos = partition((DiscreteAttribute) attribute, inf, sup);
+            else
+                pos = partition((ContinuousAttribute) attribute, inf, sup);
+            if ((pos - inf) < (sup - pos + 1)) {
+                quicksort(attribute, inf, pos - 1);
+                quicksort(attribute, pos + 1, sup);
+            } else {
+                quicksort(attribute, pos + 1, sup);
+                quicksort(attribute, inf, pos - 1);
+            }
+        }
+    }
 	/**
 	 * Metodo di test: carica il dataset {@code servo.dat}, lo stampa, e poi,
 	 * per ciascun attributo esplicativo, ordina l'intero dataset rispetto a

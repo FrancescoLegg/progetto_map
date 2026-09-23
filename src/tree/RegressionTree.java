@@ -1,14 +1,26 @@
 package tree;
 
+import data.Attribute;
+import data.ContinuousAttribute;
 import data.Data;
 import data.DiscreteAttribute;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.TreeSet;
 import utility.Keyboard;
 
 /**
  * Modella l'intero albero di regressione come insieme di sotto-alberi.
  */
-public class RegressionTree {
+public class RegressionTree implements Serializable {
+
+	/** Identificativo di versione per la serializzazione. */
+	private static final long serialVersionUID = 1L;
 
 	/** Radice del sotto-albero corrente. */
 	Node root;
@@ -50,11 +62,12 @@ public class RegressionTree {
 	}
 
 	/**
-	 * Per ciascun attributo indipendente istanzia il DiscreteNode associato e lo
-	 * inserisce in un TreeSet, che mantiene i nodi ordinati per splitVariance
-	 * crescente; il primo elemento è quindi lo split migliore. Ordina poi la
-	 * porzione di trainingSet corrente (tra begin ed end) rispetto all'attributo
-	 * del nodo selezionato.
+	 * Per ciascun attributo indipendente istanzia, sfruttando l'RTTI, il
+	 * DiscreteNode o il ContinuousNode associato e lo inserisce in un TreeSet,
+	 * che mantiene i nodi ordinati per splitVariance crescente; il primo
+	 * elemento è quindi lo split migliore. Ordina poi la porzione di
+	 * trainingSet corrente (tra begin ed end) rispetto all'attributo del nodo
+	 * selezionato.
 	 *
 	 * @param trainingSet training set completo
 	 * @param begin       indice del primo esempio del sotto-insieme
@@ -64,12 +77,17 @@ public class RegressionTree {
 	SplitNode determineBestSplitNode(Data trainingSet, int begin, int end) {
 		TreeSet<SplitNode> ts = new TreeSet<SplitNode>();
 		for (int i = 0; i < trainingSet.getNumberOfExplanatoryAttributes(); i++) {
-			ts.add(new DiscreteNode(trainingSet, begin, end,
-					(DiscreteAttribute) trainingSet.getExplanatoryAttribute(i)));
+			Attribute a = trainingSet.getExplanatoryAttribute(i);
+			SplitNode currentNode;
+			if (a instanceof DiscreteAttribute)
+				currentNode = new DiscreteNode(trainingSet, begin, end, (DiscreteAttribute) a);
+			else
+				currentNode = new ContinuousNode(trainingSet, begin, end, (ContinuousAttribute) a);
+			ts.add(currentNode);
 		}
 		// il TreeSet è ordinato per splitVariance crescente: il primo è il migliore
 		SplitNode bestNode = ts.first();
-		// ogni DiscreteNode ha riordinato il sotto-insieme: riordino per l'attributo vincente
+		// ogni nodo candidato ha riordinato il sotto-insieme: riordino per l'attributo vincente
 		trainingSet.sort(bestNode.getAttribute(), begin, end);
 		return bestNode;
 	}
@@ -188,5 +206,34 @@ public class RegressionTree {
 			else
 				return childTree[risp].predictClass();
 		}
+	}
+
+	/**
+	 * Serializza l'albero di regressione corrente in un file.
+	 *
+	 * @param nomeFile nome del file in cui salvare l'albero
+	 * @throws FileNotFoundException se il file non può essere creato
+	 * @throws IOException           se si verifica un errore durante la scrittura
+	 */
+	public void salva(String nomeFile) throws FileNotFoundException, IOException {
+		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(nomeFile));
+		out.writeObject(this);
+		out.close();
+	}
+
+	/**
+	 * Carica un albero di regressione precedentemente salvato in un file.
+	 *
+	 * @param nomeFile nome del file in cui è salvato l'albero
+	 * @return l'albero di regressione contenuto nel file
+	 * @throws FileNotFoundException se il file non esiste
+	 * @throws IOException           se si verifica un errore durante la lettura
+	 * @throws ClassNotFoundException se la classe dell'oggetto serializzato non viene trovata
+	 */
+	public static RegressionTree carica(String nomeFile) throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream in = new ObjectInputStream(new FileInputStream(nomeFile));
+		RegressionTree tree = (RegressionTree) in.readObject();
+		in.close();
+		return tree;
 	}
 }

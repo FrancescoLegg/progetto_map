@@ -1,11 +1,15 @@
 package tree;
 import  data.Data;
+import java.io.Serializable;
 
 /**
  * Classe astratta per modellare l'astrazione dell'entità nodo dell'albero di decisione
  * 
  */
-public abstract class Node {
+public abstract class Node implements Serializable {
+    /** Indentificativo di versione per la serializzazione */
+    private static final long serialVersionUID = 1L;
+
     /** Contatore dei nodi generati dall'albero */
     static int idNodeCount = 0;
 
