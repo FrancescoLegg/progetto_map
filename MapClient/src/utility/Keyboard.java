@@ -1,9 +1,5 @@
 package utility;
 
-import data.Data;
-import tree.RegressionTree;
-import java.io.FileNotFoundException;
-
 //********************************************************************
 //  Keyboard.java       Author: Lewis and Loftus
 //

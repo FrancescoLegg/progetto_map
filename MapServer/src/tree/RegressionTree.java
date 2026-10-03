@@ -12,7 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.TreeSet;
-import utility.Keyboard;
 
 /**
  * Modella l'intero albero di regressione come insieme di sotto-alberi.
@@ -184,28 +183,56 @@ public class RegressionTree implements Serializable {
 	}
 
 	/**
-	 * Visualizza le informazioni di ciascuno split dell'albero e acquisisce da
-	 * tastiera il valore dell'esempio da predire. Se root è una foglia termina
-	 * l'acquisizione e restituisce la predizione, altrimenti invoca
-	 * ricorsivamente il metodo sul figlio di root in childTree[] individuato
-	 * dalla risposta acquisita.
+	 * Indica se il nodo radice del sotto-albero corrente è una foglia.
+	 * Permette al server di guidare la predizione un passo alla volta,
+	 * senza dover accedere direttamente al campo root (package-private).
 	 *
-	 * @return il valore di classe predetto per l'esempio acquisito
-	 * @throws UnknownValueException se la risposta non permette di selezionare un ramo valido
+	 * @return true se root è un nodo fogliare
 	 */
-	public Double predictClass() throws UnknownValueException {
-		if (root instanceof LeafNode)
-			return ((LeafNode) root).getPredictedClassValue();
-		else {
-			int risp;
-			System.out.println(((SplitNode) root).formulateQuery());
-			risp = Keyboard.readInt();
-			if (risp == -1 || risp >= root.getNumberOfChildren())
-				throw new UnknownValueException("The answer should be an integer between 0 and "
-						+ (root.getNumberOfChildren() - 1) + "!");
-			else
-				return childTree[risp].predictClass();
-		}
+	public boolean isLeafNode() {
+		return root instanceof LeafNode;
+	}
+
+	/**
+	 * Restituisce il valore di classe predetto, valido solo quando
+	 * {@link #isLeafNode()} restituisce true.
+	 *
+	 * @return il valore di classe predetto dalla foglia
+	 */
+	public Double getLeafPrediction() {
+		return ((LeafNode) root).getPredictedClassValue();
+	}
+
+	/**
+	 * Restituisce il numero di rami originanti dal nodo di split corrente,
+	 * valido solo quando {@link #isLeafNode()} restituisce false.
+	 *
+	 * @return il numero di figli del nodo di split
+	 */
+	public int getNumberOfChildren() {
+		return root.getNumberOfChildren();
+	}
+
+	/**
+	 * Concatena le informazioni di ciascun test del nodo di split corrente in
+	 * una stringa, una riga per ramo, valido solo quando {@link #isLeafNode()}
+	 * restituisce false.
+	 *
+	 * @return la stringa con le domande relative a ciascun ramo dello split
+	 */
+	public String formulateQuery() {
+		return ((SplitNode) root).formulateQuery();
+	}
+
+	/**
+	 * Restituisce il sotto-albero figlio individuato dall'indice child,
+	 * valido solo quando {@link #isLeafNode()} restituisce false.
+	 *
+	 * @param child indice del ramo scelto
+	 * @return il sotto-albero corrispondente al ramo indicato
+	 */
+	public RegressionTree getChild(int child) {
+		return childTree[child];
 	}
 
 	/**

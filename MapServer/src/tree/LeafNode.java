@@ -7,6 +7,9 @@ import  data.Data;
  */
 public class LeafNode extends Node {
 
+    /** Identificativo di versione per la serializzazione. */
+    private static final long serialVersionUID = 1L;
+
     /** Valore dell'attributo di classe espresso nella foglia corrente. */
     Double predictedClassValue;
 
