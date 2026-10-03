@@ -70,7 +70,7 @@ public class ContinuousNode extends SplitNode {
 
 	/**
 	 * Confronta il valore in input con gli split candidati in mapSplit, usando
-	 * il comparatore ("<=" o ">") memorizzato in ciascuno SplitInfo.
+	 * il comparatore ("&lt;=" o "&gt;") memorizzato in ciascuno SplitInfo.
 	 *
 	 * @param value valore continuo dell'attributo che si vuole testare
 	 * @return l'indice del ramo (posizione in mapSplit) per cui il test è positivo,
